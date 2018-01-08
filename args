@@ -17,31 +17,33 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # -----------------------------------------------------------------------------
 #
 # bash library for command line argument loading/parsing/validating
-# version: 0.5.0
 #
 
 EXEC_DIR="$(dirname "$0")"
-. ${EXEC_DIR}/bash-lib/general
+# shellcheck source=bash-lib/general
+source "${EXEC_DIR}/bash-lib/general"
+
+#ARGS_FILE="${EXEC_DIR}/data/config.json"
 
 # -----------------------------------------------------------------------------
 # query data/config.json, returning the details object
 #
 function get_config_details {
-  printf "%s" "$(jq -r '.details.'$1'' < ${ARGS_FILE})"
+  printf "%s" "$(jq -r '.details.'"$1"'' < "${ARGS_FILE}")"
 }
 
 # -----------------------------------------------------------------------------
 # query data/config.json, returning the arguments object
 #
 function get_config_arg {
-  printf "%s" "$(jq -r '.arguments['$1'].'$2'' < ${ARGS_FILE})"
+  printf "%s" "$(jq -r '.arguments['"$1"'].'"$2"'' < "${ARGS_FILE}")"
 }
 
 # -----------------------------------------------------------------------------
 # query data/config.json, returning the arguments object length
 #
 function get_config_args_length {
-  printf "%s" "$(jq -r '.arguments|length' < ${ARGS_FILE})"
+  printf "%s" "$(jq -r '.arguments|length' < "${ARGS_FILE}")"
 }
 
 # -----------------------------------------------------------------------------
@@ -49,15 +51,21 @@ function get_config_args_length {
 #
 function get_config_arg_value {
 
-  local COUNT_ARGS=$(get_config_args_length)
+  local COUNT_ARGS=0
+  COUNT_ARGS=$(get_config_args_length)
+
   for ((j=0;j<COUNT_ARGS;j++)) do
-    local ARG_OPTIONS=$(get_config_arg $j text_string)
+
+    local ARG_OPTIONS=""
+    ARG_OPTIONS=$(get_config_arg $j text_string)
+
     case $1 in
       $ARG_OPTIONS)
         echo "${ARG_VALUE[$j]}"
         return
         ;;
     esac
+
   done
 
 }
@@ -69,9 +77,13 @@ function scan_for_args {
 
   while [[ $# -gt 0 ]]
   do
-    local COUNT_ARGS=$(get_config_args_length)
+    local COUNT_ARGS=0
+    COUNT_ARGS=$(get_config_args_length)
+
     for ((j=0;j<COUNT_ARGS;j++)) do
-      local ARG_OPTIONS='+('$(get_config_arg $j short_form)'|'$(get_config_arg $j long_form)')'
+      local ARG_OPTIONS=""
+      ARG_OPTIONS='+('$(get_config_arg $j short_form)'|'$(get_config_arg $j long_form)')'
+
       case $1 in
         $ARG_OPTIONS)
           ARG_VALUE[${j}]="$2"
@@ -80,7 +92,9 @@ function scan_for_args {
         *)
           ;;
       esac
+
     done
+
     shift # skip argument
   done
 
@@ -92,13 +106,16 @@ function scan_for_args {
 function check_for_args_completeness {
 
   local COUNT_ERRS=0
-  local COUNT_ARGS=$(get_config_args_length)
+  local COUNT_ARGS=0
+  COUNT_ARGS=$(get_config_args_length)
 
   for ((j=0;j<COUNT_ARGS;j++)) do
-    if [ -z "${ARG_VALUE[${j}]}" ] && [ $(get_config_arg $j required) == "true" ]; then
+
+    if [ -z "${ARG_VALUE[${j}]}" ] && [ "$(get_config_arg $j required)" == "true" ]; then
       printf "%s\n" "Error: $(get_config_arg $j text_string) argument ($(get_config_arg $j short_form)|$(get_config_arg $j long_form)) missing."
       ((COUNT_ERRS++))
     fi
+
   done
 
   if [ ${COUNT_ERRS} -gt 0 ]; then

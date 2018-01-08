@@ -17,7 +17,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # -----------------------------------------------------------------------------
 #
 # bash library for general-purpose script processing
-# version: 0.6.1
 #
 
 # -----------------------------------------------------------------------------
@@ -25,13 +24,15 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #
 function check_program_dependencies {
 
-  local -a DEPS=("${!1}")
+  local -a DEPS=("$@")
 
   for i in "${DEPS[@]}"; do
-    if ! type $i &>/dev/null; then
+
+    if ! type "$i" &>/dev/null; then
       printf "\n%s\n" "Error: program $i not installed."
       quit 1
     fi
+
   done
 
 }
@@ -41,12 +42,15 @@ function check_program_dependencies {
 #
 function check_file_dependencies {
 
-  local -a DEPS=("${!1}")
+  local -a DEPS=("$@")
+
   for i in "${DEPS[@]}"; do
-    if [ ! -f $i &>/dev/null ]; then
+
+    if [ ! -f "$i" ]; then
       printf "\n%s\n" "Error: file $i not found."
       quit 1
     fi
+
   done
 
 }
@@ -56,7 +60,7 @@ function check_file_dependencies {
 #
 function display_banner {
 
-  printf "%s\n"
+  printf "\n"
   printf "%s\n" " |"
   printf "%s\n" " |  $(get_config_details title)"
   printf "%s\n" " |    $(get_config_details version)"
@@ -66,14 +70,15 @@ function display_banner {
   printf "%s\n" " |"
 
   local MAX_COL=0
-  local COUNT_ARGS=$(get_config_args_length)
+  local COUNT_ARGS=0
+  COUNT_ARGS=$(get_config_args_length)
 
   # determine maximum column width for setting output columns
   #
   for ((j=0;j<COUNT_ARGS;j++)) do
     ARG_LEN=$(get_config_arg $j short_form)+$(get_config_arg $j long_form)
     ((${#ARG_LEN} > MAX_COL)) && MAX_COL=${#ARG_LEN}
-    (($j == COUNT_ARGS-1 )) && ((MAX_COL+=6))
+    ((j == COUNT_ARGS-1 )) && ((MAX_COL+=6))
   done
 
   for ((j=0;j<COUNT_ARGS;j++)) do
@@ -89,9 +94,10 @@ function display_banner {
 #
 function quit {
 
-  local RES=("${1}")
+  local RES=""
+  RES=("${1}")
 
-  printf "%s\n"
-  exit "${RES}"
+  printf "\n"
+  exit "${RES[]}"
 
 }
