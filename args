@@ -23,7 +23,7 @@ EXEC_DIR="$(dirname "$0")"
 # shellcheck source=bash-lib/general
 source "${EXEC_DIR}/bash-lib/general"
 
-#ARGS_FILE="${EXEC_DIR}/data/config.json"
+ARGS_FILE="${EXEC_DIR}/data/config.json"
 
 # -----------------------------------------------------------------------------
 # query data/config.json, returning the details object
