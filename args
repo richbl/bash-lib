@@ -4,26 +4,22 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # -----------------------------------------------------------------------------
 # Copyright (C) Business Learning Incorporated (businesslearninginc.com)
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License at <http://www.gnu.org/licenses/> for
-# more details.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License at 
+# <http://www.gnu.org/licenses/> for more details.
+#
 # -----------------------------------------------------------------------------
 #
 # bash library for command line argument loading/parsing/validating
 #
 
-EXEC_DIR="$(dirname "$0")"
-# shellcheck source=bash-lib/general
-source "${EXEC_DIR}/bash-lib/general"
-
-ARGS_FILE="${EXEC_DIR}/data/config.json"
+readonly ARGS_FILE="data/config.json"
 
 # -----------------------------------------------------------------------------
 # query data/config.json, returning the details object
@@ -40,7 +36,7 @@ function get_config_arg {
 }
 
 # -----------------------------------------------------------------------------
-# query data/config.json, returning the arguments object length
+# query data/config.json, returning the count of arguments
 #
 function get_config_args_length {
   printf "%s" "$(jq -r '.arguments|length' < "${ARGS_FILE}")"
@@ -51,20 +47,18 @@ function get_config_args_length {
 #
 function get_config_arg_value {
 
-  local COUNT_ARGS=0
-  COUNT_ARGS=$(get_config_args_length)
+  local count_config_args=0
+  count_config_args=$(get_config_args_length)
 
-  for ((j=0;j<COUNT_ARGS;j++)) do
+  for ((j=0;j<count_config_args;j++)) do
 
-    local ARG_OPTIONS=""
-    ARG_OPTIONS=$(get_config_arg $j text_string)
+    local arg_options=""
+    arg_options=$(get_config_arg "$j" text_string)
 
-    case $1 in
-      $ARG_OPTIONS)
-        echo "${ARG_VALUE[$j]}"
-        return
-        ;;
-    esac
+    if echo "$1" | grep -Eq "$arg_options"; then
+      echo "${ARG_VALUE[$j]}"
+      return
+    fi
 
   done
 
@@ -77,25 +71,24 @@ function scan_for_args {
 
   while [[ $# -gt 0 ]]
   do
-    local COUNT_ARGS=0
-    COUNT_ARGS=$(get_config_args_length)
 
-    for ((j=0;j<COUNT_ARGS;j++)) do
-      local ARG_OPTIONS=""
-      ARG_OPTIONS='+('$(get_config_arg $j short_form)'|'$(get_config_arg $j long_form)')'
+    local count_config_args=0
+    count_config_args=$(get_config_args_length)
 
-      case $1 in
-        $ARG_OPTIONS)
-          ARG_VALUE[${j}]="$2"
-          shift # skip argument
-          ;;
-        *)
-          ;;
-      esac
+    for ((j=0;j<count_config_args;j++)) do
+
+      local arg_options=""
+      arg_options='('$(get_config_arg "$j" short_form)'|'$(get_config_arg "$j" long_form)')'
+
+      if echo "$1" | grep -Eq "$arg_options"; then
+        ARG_VALUE[${j}]="$2"
+        shift # skip to next argument
+        break
+      fi
 
     done
 
-    shift # skip argument
+    shift # skip to next argument
   done
 
 }
@@ -105,20 +98,20 @@ function scan_for_args {
 #
 function check_for_args_completeness {
 
-  local COUNT_ERRS=0
-  local COUNT_ARGS=0
-  COUNT_ARGS=$(get_config_args_length)
+  local count_errs=0
+  local count_config_args=0
+  count_config_args=$(get_config_args_length)
 
-  for ((j=0;j<COUNT_ARGS;j++)) do
+  for ((j=0;j<count_config_args;j++)) do
 
-    if [ -z "${ARG_VALUE[${j}]}" ] && [ "$(get_config_arg $j required)" == "true" ]; then
-      printf "%s\n" "Error: $(get_config_arg $j text_string) argument ($(get_config_arg $j short_form)|$(get_config_arg $j long_form)) missing."
-      ((COUNT_ERRS++))
+    if [ -z "${ARG_VALUE[${j}]}" ] && [ "$(get_config_arg "$j" required)" == "true" ]; then
+      printf "%s\n" "Error: $(get_config_arg "$j" text_string) argument ($(get_config_arg "$j" short_form)|$(get_config_arg "$j" long_form)) missing."
+      ((count_errs++))
     fi
 
   done
 
-  if [ ${COUNT_ERRS} -gt 0 ]; then
+  if [ "${count_errs}" -gt 0 ]; then
     quit 1
   fi
 

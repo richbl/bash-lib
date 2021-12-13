@@ -4,16 +4,16 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # -----------------------------------------------------------------------------
 # Copyright (C) Business Learning Incorporated (businesslearninginc.com)
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License at <http://www.gnu.org/licenses/> for
-# more details.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License at 
+# <http://www.gnu.org/licenses/> for more details.
+#
 # -----------------------------------------------------------------------------
 #
 # bash library for general-purpose script processing
@@ -24,11 +24,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #
 function check_program_dependencies {
 
-  local -a DEPS=("$@")
+  local -a deps=("$@")
 
-  for i in "${DEPS[@]}"; do
+  for i in "${deps[@]}"; do
 
-    if ! type "$i" &>/dev/null; then
+    if ! command -v "$i" &>/dev/null; then
       printf "\n%s\n" "Error: program $i not installed."
       quit 1
     fi
@@ -42,9 +42,9 @@ function check_program_dependencies {
 #
 function check_file_dependencies {
 
-  local -a DEPS=("$@")
+  local -a deps=("$@")
 
-  for i in "${DEPS[@]}"; do
+  for i in "${deps[@]}"; do
 
     if [ ! -f "$i" ]; then
       printf "\n%s\n" "Error: file $i not found."
@@ -69,20 +69,20 @@ function display_banner {
   printf "%s\n" " |    $(get_config_details syntax)"
   printf "%s\n" " |"
 
-  local MAX_COL=0
-  local COUNT_ARGS=0
-  COUNT_ARGS=$(get_config_args_length)
+  local max_col=0
+  local count_args=0
+  count_args=$(get_config_args_length)
 
   # determine maximum column width for setting output columns
   #
-  for ((j=0;j<COUNT_ARGS;j++)) do
-    ARG_LEN=$(get_config_arg $j short_form)+$(get_config_arg $j long_form)
-    ((${#ARG_LEN} > MAX_COL)) && MAX_COL=${#ARG_LEN}
-    ((j == COUNT_ARGS-1 )) && ((MAX_COL+=6))
+  for ((j=0;j<count_args;j++)) do
+    arg_len=$(get_config_arg "$j" short_form)+$(get_config_arg "$j" long_form)
+    ((${#arg_len} > max_col)) && max_col=${#arg_len}
+    ((j == count_args-1 )) && ((max_col+=6))
   done
 
-  for ((j=0;j<COUNT_ARGS;j++)) do
-    printf "%-${MAX_COL}s %s\n" " |  $(get_config_arg $j short_form), $(get_config_arg $j long_form)" "$(get_config_arg $j description)"
+  for ((j=0;j<count_args;j++)) do
+    printf "%-${max_col}s %s\n" " |  $(get_config_arg "$j" short_form), $(get_config_arg "$j" long_form)" "$(get_config_arg "$j" description)"
   done
 
   printf "%s\n\n" " |"
@@ -90,14 +90,14 @@ function display_banner {
 }
 
 # -----------------------------------------------------------------------------
-# exit wrapper
+# exit program (with exit status passed in)
 #
 function quit {
 
-  local RES=""
-  RES=("${1}")
+  local result=""
+  result=("${1}")
 
   printf "\n"
-  exit "${RES[0]}"
+  exit "${result[0]}"
 
 }
