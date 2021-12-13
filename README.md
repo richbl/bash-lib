@@ -4,10 +4,11 @@
 
 **Bash-Lib** is a library of common [bash](https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29) routines used in projects based on the [a-bash-template (BaT)](https://github.com/richbl/a-bash-template) project. This library is broken into two files:
 
-- `general`: Routines created to:
-  - Check program dependencies
-  - Check file dependencies
-  - Format and display a program banner, e.g.,
+- `general`
+  - Routines created to:
+    - Check program dependencies
+    - Check file dependencies
+    - From a JSON configuration file, dynamically format and display a program banner, e.g.
 >>
     |
     | A bash template (BaT) to ease argument parsing and management
@@ -22,9 +23,10 @@
     |   -d, --delta    delta (something descriptive)
     |
 
-- `args`: Routines created to:
-  - Parse a JSON file for program configuration details
-  - Scan command-line arguments for accuracy and completeness
+- `args`
+  - Routines created to:
+    - Parse a JSON file for program configuration details
+    - Scan command-line arguments for accuracy and completeness
 
 For details on how the various routines of this library project are used, see the [A-Bash-Template (BaT)](https://github.com/richbl/a-bash-template#a-bash-template) project.
 
