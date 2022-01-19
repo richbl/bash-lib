@@ -11,7 +11,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE.  See the GNU General Public License at 
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License at
 # <http://www.gnu.org/licenses/> for more details.
 #
 # -----------------------------------------------------------------------------
@@ -20,9 +20,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #
 
 # -----------------------------------------------------------------------------
-# check program dependencies
+# check_program_dependencies() checks external program dependencies passed in
+# through $0
 #
-function check_program_dependencies {
+function check_program_dependencies() {
 
   local -a deps=("$@")
 
@@ -38,9 +39,9 @@ function check_program_dependencies {
 }
 
 # -----------------------------------------------------------------------------
-# check file dependencies
+# check_file_dependencies() checks file dependencies passed in through $0
 #
-function check_file_dependencies {
+function check_file_dependencies() {
 
   local -a deps=("$@")
 
@@ -56,9 +57,10 @@ function check_file_dependencies {
 }
 
 # -----------------------------------------------------------------------------
-# display script banner
+# display_banner() builds and displays a custom-sized script banner using
+# configuration details managed through the args library
 #
-function display_banner {
+function display_banner() {
 
   printf "\n"
   printf "%s\n" " |"
@@ -75,13 +77,13 @@ function display_banner {
 
   # determine maximum column width for setting output columns
   #
-  for ((j=0;j<count_args;j++)) do
+  for ((j = 0; j < count_args; j++)); do
     arg_len=$(get_config_arg "$j" short_form)+$(get_config_arg "$j" long_form)
     ((${#arg_len} > max_col)) && max_col=${#arg_len}
-    ((j == count_args-1 )) && ((max_col+=6))
+    ((j == count_args - 1)) && ((max_col += 6))
   done
 
-  for ((j=0;j<count_args;j++)) do
+  for ((j = 0; j < count_args; j++)); do
     printf "%-${max_col}s %s\n" " |  $(get_config_arg "$j" short_form), $(get_config_arg "$j" long_form)" "$(get_config_arg "$j" description)"
   done
 
@@ -90,9 +92,9 @@ function display_banner {
 }
 
 # -----------------------------------------------------------------------------
-# exit program (with exit status passed in)
+# quit() exits program (with exit status passed in)
 #
-function quit {
+function quit() {
 
   local result=""
   result=("${1}")
