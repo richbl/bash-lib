@@ -12,7 +12,6 @@
 >>
     |
     | A bash template (BaT) to ease argument parsing and management
-    |   0.2.0
     |
     | Usage:
     |   bash_template.sh -a alpha -b bravo [-c charlie] -d delta
