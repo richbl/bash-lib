@@ -99,7 +99,7 @@ function check_for_args_completeness() {
 
   for ((j = 0; j < count_config_args; j++)); do
 
-    if [ -z "${ARG_VALUE[${j}]}" ] && [ "$(get_config_arg "$j" required)" == "true" ]; then
+    if [ -z "${ARG_VALUE[${j}]:-}" ] && [ "$(get_config_arg "$j" required)" == "true" ]; then
       printf "%s\n" "Error: $(get_config_arg "$j" text_string) argument ($(get_config_arg "$j" short_form)|$(get_config_arg "$j" long_form)) missing."
       ((count_errs++))
     fi
