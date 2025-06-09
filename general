@@ -105,6 +105,18 @@ exist_directory() {
 }
 
 # -----------------------------------------------------------------------------
+# function exist_directory() confirms directory existence
+#
+function exist_directory() {
+
+  if [ ! -d "${1}" ]; then
+    printf "\n%s\n" "Error: directory ${1} not found."
+    quit 1
+  fi
+
+}
+
+# -----------------------------------------------------------------------------
 # quit() exits program (with exit status passed in)
 #
 quit() {

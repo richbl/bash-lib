@@ -150,27 +150,17 @@ scan_for_args() {
 # -----------------------------------------------------------------------------
 # check_for_args_completeness() verifies all required arguments are present
 #
-check_for_args_completeness() {
+function check_for_args_completeness() {
 
-  _load_config
-  local err_count=0
-  local arg_count
-  arg_count=$(get_config_args_length)
+  local count_errs=0
+  local count_config_args=0
+  count_config_args=$(get_config_args_length)
 
-  for ((i = 0; i < arg_count; i++)); do
-    local is_required text_string short_form long_form
-    is_required=$(get_config_arg "$i" "required")
+  for ((j = 0; j < count_config_args; j++)); do
 
-    if [[ "$is_required" == "true" ]]; then
-      text_string=$(get_config_arg "$i" "text_string")
-
-      if [[ -z "${ARG_VALUE[${text_string}]:-}" ]]; then
-        short_form=$(get_config_arg "$i" "short_form")
-        long_form=$(get_config_arg "$i" "long_form")
-        printf "Error: argument '%s' (%s|%s) is missing.\n" \
-          "$text_string" "$short_form" "$long_form" >&2
-        ((err_count++))
-      fi
+    if [ -z "${ARG_VALUE[${j}]:-}" ] && [ "$(get_config_arg "$j" required)" == "true" ]; then
+      printf "%s\n" "Error: $(get_config_arg "$j" text_string) argument ($(get_config_arg "$j" short_form)|$(get_config_arg "$j" long_form)) missing."
+      ((count_errs++))
     fi
   done
 
