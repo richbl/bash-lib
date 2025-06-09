@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 
 # -----------------------------------------------------------------------------
-# Copyright (C) Business Learning Incorporated (businesslearninginc.com)
+# Copyright (c) 2025 Richard Bloch
 #
-# This program is free software: you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License at
-# <http://www.gnu.org/licenses/> for more details.
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
 #
 # -----------------------------------------------------------------------------
 #
 # Bash library (bash-lib) for command line argument loading/parsing/validating
+# Version: 1.1.0
 #
 
 # --- Constants and variables -----------------------------------------------
@@ -150,17 +151,27 @@ scan_for_args() {
 # -----------------------------------------------------------------------------
 # check_for_args_completeness() verifies all required arguments are present
 #
-function check_for_args_completeness() {
+check_for_args_completeness() {
 
-  local count_errs=0
-  local count_config_args=0
-  count_config_args=$(get_config_args_length)
+  _load_config
+  local err_count=0
+  local arg_count
+  arg_count=$(get_config_args_length)
 
-  for ((j = 0; j < count_config_args; j++)); do
+  for ((i = 0; i < arg_count; i++)); do
+    local is_required text_string short_form long_form
+    is_required=$(get_config_arg "$i" "required")
 
-    if [ -z "${ARG_VALUE[${j}]:-}" ] && [ "$(get_config_arg "$j" required)" == "true" ]; then
-      printf "%s\n" "Error: $(get_config_arg "$j" text_string) argument ($(get_config_arg "$j" short_form)|$(get_config_arg "$j" long_form)) missing."
-      ((count_errs++))
+    if [[ "$is_required" == "true" ]]; then
+      text_string=$(get_config_arg "$i" "text_string")
+
+      if [[ -z "${ARG_VALUE[${text_string}]:-}" ]]; then
+        short_form=$(get_config_arg "$i" "short_form")
+        long_form=$(get_config_arg "$i" "long_form")
+        printf "Error: argument '%s' (%s|%s) is missing.\n" \
+          "$text_string" "$short_form" "$long_form" >&2
+        ((err_count++))
+      fi
     fi
   done
 

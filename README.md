@@ -13,6 +13,7 @@
         ``` terminal
         |
         | A bash template (BaT) to ease argument parsing and management
+        |   1.2.0
         |
         | Usage:
         |   bash_template.sh -a alpha -b bravo [-c charlie] -d delta
@@ -27,7 +28,7 @@
 - `args`
     - Routines created to:
         - Scan command-line arguments for accuracy and completeness
-        - Parse a JSON file for program configuration details, such as the following JSON configuration file:
+        - Parse a JSON file for program configuration details, such as the following JSON configuration file (used in the [A-Bash-Template (BaT)](https://github.com/richbl/a-bash-template#a-bash-template) project):
 
       ``` json
       {
@@ -80,11 +81,10 @@ Of course we are! Otherwise, what value does a BaT offer if it doesn't get used 
 
 All of our bash scripts have been written to use this project. It's cut our development time, and made it easier to provide updates and added functionality without having to spend time reinventing the wheel every time. Check out all of our projects here on [Github](https://github.com/richbl).
 
-
 ## <picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/2356369f-c752-4e55-8443-49f4174df4b5" width="30"><source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/2356369f-c752-4e55-8443-49f4174df4b5" width="30"><img src="https://github.com/user-attachments/assets/2356369f-c752-4e55-8443-49f4174df4b5" width="30"></picture>  This Project Uses Git Submodules <picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/2356369f-c752-4e55-8443-49f4174df4b5" width="30"><source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/2356369f-c752-4e55-8443-49f4174df4b5" width="30"><img src="https://github.com/user-attachments/assets/2356369f-c752-4e55-8443-49f4174df4b5" width="30"></picture>
 
 This project is managed as a [Git submodule project(s)](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to keep projects that use this library stable while this library is periodically updated.
 
 ## License
 
-This project is distributed under the [MIT License](https://github.com/richbl/a-bash-template/blob/main/LICENSE)
+This project is distributed under the [MIT License](https://github.com/richbl/bash-lib/blob/main/LICENSE)
