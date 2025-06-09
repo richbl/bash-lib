@@ -1,5 +1,4 @@
-#!/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#!/usr/bin/env bash
 
 # -----------------------------------------------------------------------------
 # Copyright (C) Business Learning Incorporated (businesslearninginc.com)
@@ -16,97 +15,166 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #
 # -----------------------------------------------------------------------------
 #
-# bash library for command line argument loading/parsing/validating
+# Bash library (bash-lib) for command line argument loading/parsing/validating
+#
+
+# --- Constants and variables -----------------------------------------------
 #
 EXEC_DIR="$(dirname "$(readlink -f "$0")")"
-readonly ARGS_FILE="${EXEC_DIR}/data/config.json"
+readonly EXEC_DIR
+
+# Path to the config file
+ARGS_FILE="${EXEC_DIR}/data/config.json"
+readonly ARGS_FILE
+
+# Associative array to hold parsed argument values
+declare -A ARG_VALUE
+
+# --- Internal helper function(s) and cached data -------------------------------
+#
+
+# Cache the config in memory
+__config_json_cache=""
+__config_args_cache=""
 
 # -----------------------------------------------------------------------------
-# get_config_details(), using external jq command, queries data/config.json,
-# returning the details object
+# _load_config ensures the JSON is read only once
 #
-function get_config_details() {
-  printf "%s" "$(jq -r '.details.'"$1"'' <"${ARGS_FILE}")"
-}
+_load_config() {
 
-# -----------------------------------------------------------------------------
-# get_config_arg(), using external jq command, queries data/config.json,
-# returning the arguments object
-#
-function get_config_arg() {
-  printf "%s" "$(jq -r '.arguments['"$1"'].'"$2"'' <"${ARGS_FILE}")"
-}
+  if [[ -z "$__config_json_cache" ]]; then
 
-# -----------------------------------------------------------------------------
-# get_config_args_length(), using external jq command, queries
-# data/config.json, returning the count of arguments
-#
-function get_config_args_length() {
-  printf "%s" "$(jq -r '.arguments|length' <"${ARGS_FILE}")"
-}
-
-# -----------------------------------------------------------------------------
-# get_config_arg_value() returns argument value text from argument keys
-#
-function get_config_arg_value() {
-
-  local count_config_args=0
-  count_config_args=$(get_config_args_length)
-
-  for ((j = 0; j < count_config_args; j++)); do
-
-    if [ "$1" == "$(get_config_arg "$j" text_string)" ]; then
-      echo "${ARG_VALUE[$j]}"
-      return
+    if [[ ! -f "$ARGS_FILE" ]]; then
+      printf "Error: Configuration file not found at '%s'\n" "$ARGS_FILE" >&2
+      exit 1
     fi
 
-  done
+    __config_json_cache=$(<"${ARGS_FILE}")
+
+    # Cache the arguments array separately for efficiency
+    __config_args_cache=$(jq -r '.arguments' <<<"$__config_json_cache")
+  fi
 
 }
 
 # -----------------------------------------------------------------------------
-# scan_for_args() scans command line for arguments, setting global ARG_VALUE[]
+# get_config_details() queries a top-level key from the 'details' object
+# in the config file
 #
-function scan_for_args() {
+get_config_details() {
+
+  _load_config
+  jq -r --arg key "$1" '.details[$key]' <<<"$__config_json_cache"
+
+}
+
+# -----------------------------------------------------------------------------
+# get_config_arg() queries a specific key from an argument definition by its
+# index in the config file
+#
+get_config_arg() {
+
+  _load_config
+  jq -r --argjson index "$1" --arg key "$2" '.[$index][$key]' <<<"$__config_args_cache"
+
+}
+
+# -----------------------------------------------------------------------------
+# get_config_args_length() returns the total number of argument definitions
+# in the config file
+#
+get_config_args_length() {
+
+  _load_config
+  jq -r '. | length' <<<"$__config_args_cache"
+
+}
+
+# -----------------------------------------------------------------------------
+# get_config_arg_value() returns the parsed value for a given argument
+# The argument is identified by its 'text_string' from the config
+#
+get_config_arg_value() {
+  printf "%s" "${ARG_VALUE[$1]:-}"
+}
+
+# -----------------------------------------------------------------------------
+# scan_for_args() scans command-line arguments and populates ARG_VALUE.
+#
+scan_for_args() {
+
+  _load_config
+  local arg_count
+  arg_count=$(get_config_args_length)
+
+  # Pre-build lookup maps for short and long forms for efficiency
+  declare -A short_form_map
+  declare -A long_form_map
+
+  for ((i = 0; i < arg_count; i++)); do
+    local text_string short long
+    text_string=$(get_config_arg "$i" "text_string")
+    short=$(get_config_arg "$i" "short_form")
+    long=$(get_config_arg "$i" "long_form")
+    [[ -n "$short" ]] && short_form_map["$short"]="$text_string"
+    [[ -n "$long" ]] && long_form_map["$long"]="$text_string"
+  done
 
   while [[ $# -gt 0 ]]; do
+    local key=""
+    local consumed=1 # Default to consuming one argument
 
-    local count_config_args=0
-    count_config_args=$(get_config_args_length)
+    if [[ -n "${short_form_map[$1]:-}" ]]; then
+      key="${short_form_map[$1]}"
+    elif [[ -n "${long_form_map[$1]:-}" ]]; then
+      key="${long_form_map[$1]}"
+    fi
 
-    for ((j = 0; j < count_config_args; j++)); do
-
-      if [ "$1" == "$(get_config_arg "$j" short_form)" ] || [ "$1" == "$(get_config_arg "$j" long_form)" ]; then
-        ARG_VALUE[${j}]="$2"
-        break
+    if [[ -n "$key" ]]; then
+      # Check if the next argument is a value (and not another flag)
+      if [[ $# -gt 1 ]] && [[ ! "${2-}" =~ ^- ]]; then
+        ARG_VALUE["$key"]="$2"
+        consumed=2 # Set to consume both the flag and its value
+      else
+        # A boolean flag with no value
+        ARG_VALUE["$key"]=""
       fi
+    fi
 
-    done
-    shift # skip to next argument
+    # Consume the determined number of arguments
+    shift "$consumed"
   done
 
 }
 
 # -----------------------------------------------------------------------------
-# check_for_args_completeness() checks for arguments completeness, quitting
-# with a message if required arguments are missing
+# check_for_args_completeness() verifies all required arguments are present
 #
-function check_for_args_completeness() {
+check_for_args_completeness() {
 
-  local count_errs=0
-  local count_config_args=0
-  count_config_args=$(get_config_args_length)
+  _load_config
+  local err_count=0
+  local arg_count
+  arg_count=$(get_config_args_length)
 
-  for ((j = 0; j < count_config_args; j++)); do
+  for ((i = 0; i < arg_count; i++)); do
+    local is_required text_string short_form long_form
+    is_required=$(get_config_arg "$i" "required")
 
-    if [ -z "${ARG_VALUE[${j}]}" ] && [ "$(get_config_arg "$j" required)" == "true" ]; then
-      printf "%s\n" "Error: $(get_config_arg "$j" text_string) argument ($(get_config_arg "$j" short_form)|$(get_config_arg "$j" long_form)) missing."
-      ((count_errs++))
+    if [[ "$is_required" == "true" ]]; then
+      text_string=$(get_config_arg "$i" "text_string")
+
+      if [[ -z "${ARG_VALUE[${text_string}]:-}" ]]; then
+        short_form=$(get_config_arg "$i" "short_form")
+        long_form=$(get_config_arg "$i" "long_form")
+        printf "Error: argument '%s' (%s|%s) is missing.\n" \
+          "$text_string" "$short_form" "$long_form" >&2
+        ((err_count++))
+      fi
     fi
-
   done
 
-  if [ "${count_errs}" -gt 0 ]; then
+  if ((err_count > 0)); then
     quit 1
   fi
 
