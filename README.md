@@ -2,6 +2,8 @@
 
 ## [<img src="https://github.com/user-attachments/assets/4dc1e16e-3fd3-481c-9a43-b027c029dd27" width="150" />](https://github.com/richbl/a-bash-template)[Developed for a Bash Template (BaT)](https://github.com/richbl/a-bash-template)
 
+![GitHub Release](https://img.shields.io/github/v/release/richbl/bash-lib)  ![GitHub License](https://img.shields.io/github/license/richbl/bash-lib?color=blue)  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e5526a35ae7847d59473486e40037611)](https://app.codacy.com/gh/richbl/bash-lib/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 **Bash-Lib** is a library of common [Bash](https://en.wikipedia.org/wiki/Bash_%28Unix_shell%29) shell routines used in projects based on the [A-Bash-Template (BaT)](https://github.com/richbl/a-bash-template) project. This library is broken into two files:
 
 - `general`
