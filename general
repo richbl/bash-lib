@@ -16,39 +16,53 @@
 # -----------------------------------------------------------------------------
 #
 # Bash library (bash-lib) for general-purpose script processing
-# Version: 1.1.0
+# Version: 1.3.0
 #
+# This file is a LIBRARY and must be sourced, not executed:
+#   source "path/to/bash-lib/general"
+#
+# Dependency note:
+#   display_banner() calls get_config_details(), get_config_arg() and get_config_args_length(),
+#   which are defined in the companion 'args' library file. Therefore, be sur to source both
+#   general' and 'args' before calling display_banner()
+#
+# Refuse to run if executed directly instead of sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	printf "Error: '%s' is a library and must be sourced, not executed.\n" "${BASH_SOURCE[0]}" >&2
+	exit 1
+fi
 
 # -----------------------------------------------------------------------------
-# check_program_dependencies() checks external program dependencies passed in
-# through $0
+# check_program_dependencies() checks external program dependencies passed in through $@
 #
 check_program_dependencies() {
 
-  for dep in "$@"; do
+	local dep
+	for dep in "$@"; do
 
-    if ! command -v "$dep" &>/dev/null; then
-      printf "Error: program '%s' not installed.\n" "$dep" >&2
-      quit 1
-    fi
+		if ! command -v "$dep" &>/dev/null; then
+			printf "Error: program '%s' not installed.\n" "$dep" >&2
+			quit 1
+		fi
 
-  done
+	done
 
 }
 
 # -----------------------------------------------------------------------------
-# check_file_dependencies() checks file dependencies passed in through $0
+# check_file_dependencies() checks file dependencies passed in through $@
 #
 check_file_dependencies() {
 
-  for file in "$@"; do
+	local file
+	for file in "$@"; do
 
-    if [[ ! -f "$file" ]]; then
-      printf "Error: file '%s' not found.\n" "$file" >&2
-      quit 1
-    fi
+		if [[ ! -f "$file" ]]; then
+			printf "Error: file '%s' not found.\n" "$file" >&2
+			quit 1
+		fi
 
-  done
+	done
 
 }
 
@@ -58,50 +72,52 @@ check_file_dependencies() {
 #
 display_banner() {
 
-  cat <<-EOF
+	_load_config
+	cat <<-EOF
 
- |
- |  $(get_config_details title)
- |    $(get_config_details version)
- |
- |  Usage:
- |    $(get_config_details syntax)
- |
+		 |
+		 |  $(get_config_details title)
+		 |    $(get_config_details version)
+		 |
+		 |  Usage:
+		 |    $(get_config_details syntax)
+		 |
 	EOF
 
-  local max_col=0
-  local arg_count
-  arg_count=$(get_config_args_length)
+	local max_col=0
+	local arg_count
+	arg_count=$(get_config_args_length)
 
-  # Determine the maximum width needed for the arguments column for alignment
-  for ((i = 0; i < arg_count; i++)); do
-    local arg_string
-    arg_string="$(get_config_arg "$i" short_form), $(get_config_arg "$i" long_form)"
-    ((${#arg_string} > max_col)) && max_col=${#arg_string}
-  done
+	local i arg_string
 
-  # Print the formatted arguments
-  for ((i = 0; i < arg_count; i++)); do
-    local arg
-    local desc
-    arg="$(get_config_arg "$i" short_form), $(get_config_arg "$i" long_form)"
-    desc="$(get_config_arg "$i" description)"
-    printf " |  %-*s  %s\n" "$max_col" "$arg" "$desc"
-  done
+	# Determine the maximum width needed for the arguments column for alignment
+	for ((i = 0; i < arg_count; i++)); do
+		arg_string="$(get_config_arg "$i" short_form), $(get_config_arg "$i" long_form)"
+		((${#arg_string} > max_col)) && max_col=${#arg_string}
+	done
 
-  printf " |\n\n"
+	local arg desc
+
+	# Print the formatted arguments
+	for ((i = 0; i < arg_count; i++)); do
+		arg="$(get_config_arg "$i" short_form), $(get_config_arg "$i" long_form)"
+		desc="$(get_config_arg "$i" description)"
+		printf " |  %-*s  %s\n" "$max_col" "$arg" "$desc"
+	done
+
+	printf " |\n\n"
 
 }
 
 # -----------------------------------------------------------------------------
-# function exist_directory() confirms directory existence
+# exist_directory() confirms directory existence
 #
 exist_directory() {
 
-  if [[ ! -d "$1" ]]; then
-    printf "Error: directory '%s' not found.\n" "$1" >&2
-    quit 1
-  fi
+	if [[ ! -d "$1" ]]; then
+		printf "Error: directory '%s' not found.\n" "$1" >&2
+		quit 1
+	fi
 
 }
 
@@ -109,5 +125,5 @@ exist_directory() {
 # quit() exits program (with exit status passed in)
 #
 quit() {
-  exit "${1:-1}"
+	exit "${1:-1}"
 }
