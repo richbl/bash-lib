@@ -4,6 +4,7 @@
 ## [<img alt="A-Bash-Template project logo used as a link to the repository" src="https://github.com/user-attachments/assets/4dc1e16e-3fd3-481c-9a43-b027c029dd27" width="150" />](https://github.com/richbl/a-bash-template)[Developed for a Bash Template (BaT)](https://github.com/richbl/a-bash-template)
 
 <a href="https://github.com/richbl/bash-lib/releases"><img alt="GitHub release badge showing the latest repository tag for richbl slash bash-lib" src="https://badgen.net/github/tag/richbl/bash-lib?icon=github&label=release"></a>
+<a href="https://github.com/richbl/bash-lib/pulls?q=is%3Apr+state%3Aclosed"><img alt="Link to PRs" src="https://badgen.net/github/last-commit/richbl/bash-lib?color=blue&icon=github"></a>
 <a href="https://app.codacy.com/gh/richbl/bash-lib/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img alt="Codacy quality grade badge showing project analysis grade for bash-lib" src="https://app.codacy.com/project/badge/Grade/e5526a35ae7847d59473486e40037611"></a>
 <!-- markdownlint-enable MD033 -->
 
